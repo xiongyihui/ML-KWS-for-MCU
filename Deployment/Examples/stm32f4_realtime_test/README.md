@@ -5,7 +5,7 @@ Use STM32F407's 12 bit ADC to get audio data from a microphone, and then run DNN
 
 ### Hardware 
 + [Arch Max (STM32F407)](https://www.seeedstudio.com/Arch-Max-v1.1-p-2632.html)
-+ Grove Sound Sensor (must add a bias for the microphone)
++ [Grove Sound Sensor (must add a bias for the microphone)](https://github.com/xiongyihui/ML-KWS-for-MCU/issues/1)
 
 ```
            TIM3 (16K)
