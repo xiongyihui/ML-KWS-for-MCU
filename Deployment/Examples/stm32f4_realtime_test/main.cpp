@@ -177,7 +177,7 @@ int main()
     KWS kws(audio_buffer,scratch_buffer);
 
     pc.baud(576000);
-    pc.printf("---- KWS ----\r\n");
+    printf("---- KWS ----\r\n");
 
     ConfigureADC();
     ConfigureDMA();
@@ -233,8 +233,8 @@ int main()
             
             if ((detect_count & 0x1F) == 0) 
             {
-                pc.printf("sum: %d, avg: %d, max: %d, min: %d\r\n", sum, sum / AUDIO_BLOCK_SIZE, max, min);
-                pc.printf("processing time: %d us, period: %d @ %d, %d\r\n", end - start, end - last, sample_count, detect_count);
+                printf("sum: %d, avg: %d, max: %d, min: %d\r\n", sum, sum / AUDIO_BLOCK_SIZE, max, min);
+                printf("processing time: %d us, period: %d @ %d, %d\r\n", end - start, end - last, sample_count, detect_count);
             }
     
 
