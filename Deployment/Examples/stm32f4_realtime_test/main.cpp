@@ -24,12 +24,14 @@
 // Timer 3 (16000 fs) -> ADC -> DMA
 
 #include "kws.h"
+#include "wav_data.h"
 
 #define AUDIO_BLOCK_SIZE    (1 * FRAME_LEN)
 #define ADC_BUFFER_LENGTH   (AUDIO_BLOCK_SIZE * 2)
 
 uint32_t audio_input_buffer[ADC_BUFFER_LENGTH]; // 2 for ping-pong buffer
-int16_t audio_buffer[AUDIO_BLOCK_SIZE];
+int16_t audio_buffer[16000] = WAVE_DATA;
+// int16_t audio_buffer[AUDIO_BLOCK_SIZE];
 
 volatile uint32_t sample_count = 0;
 q7_t scratch_buffer[SCRATCH_BUFFER_SIZE];
@@ -179,6 +181,8 @@ int main()
     pc.baud(576000);
     printf("---- KWS ----\r\n");
 
+    kws.extract_features();
+
     ConfigureADC();
     ConfigureDMA();
     HAL_ADC_Start_DMA(&g_AdcHandle, audio_input_buffer, ADC_BUFFER_LENGTH);
@@ -195,27 +199,28 @@ int main()
         if (detect_count < sample_count) {
             detect_count++;
 
-            int32_t sum = 0;
-            int16_t max = 0;
-            int16_t min = 0;
-            for (int i=0; i<AUDIO_BLOCK_SIZE; i++) {
-                sum += audio_buffer[i];
+            // int32_t sum = 0;
+            // int16_t max = 0;
+            // int16_t min = 0;
+            // for (int i=0; i<AUDIO_BLOCK_SIZE; i++) {
+            //     sum += audio_buffer[i];
 
-                if (audio_buffer[i] > max) {
-                    max = audio_buffer[i];
-                } else if (audio_buffer[i] < min) {
-                    min = audio_buffer[i];
-                }
-            }
+            //     if (audio_buffer[i] > max) {
+            //         max = audio_buffer[i];
+            //     } else if (audio_buffer[i] < min) {
+            //         min = audio_buffer[i];
+            //     }
+            // }
 
 
             start = T.read_us();
 
             //Averaging window for smoothing out the output predictions
-            int averaging_window_len = 6;  //i.e. average over 6 inferences or 240ms
+            int averaging_window_len = 3;  //i.e. average over 6 inferences or 240ms
             int detection_threshold = 80;  //in percent
 
             kws.extract_features(1); //extract mfcc features
+
             kws.classify();	  //classify using dnn
 
             kws.average_predictions(averaging_window_len);
@@ -225,17 +230,17 @@ int main()
 
             end = T.read_us();
 
-            if ((max_ind) != 0 && (kws.averaged_output[max_ind] >= detection_threshold*128/100)) 
+            // if ((max_ind) != 0 && (kws.averaged_output[max_ind] >= detection_threshold*128/100)) 
             {
                 printf("Detected %s (%d%%)\r\n",output_class[max_ind],((int)kws.averaged_output[max_ind]*100/128));
             }
 
             
-            if ((detect_count & 0x1F) == 0) 
-            {
-                printf("sum: %d, avg: %d, max: %d, min: %d\r\n", sum, sum / AUDIO_BLOCK_SIZE, max, min);
-                printf("processing time: %d us, period: %d @ %d, %d\r\n", end - start, end - last, sample_count, detect_count);
-            }
+            // if ((detect_count & 0x1F) == 0) 
+            // {
+            //     printf("sum: %d, avg: %d, max: %d, min: %d\r\n", sum, sum / AUDIO_BLOCK_SIZE, max, min);
+            //     printf("processing time: %d us, period: %d @ %d, %d\r\n", end - start, end - last, sample_count, detect_count);
+            // }
     
 
             last = end;
